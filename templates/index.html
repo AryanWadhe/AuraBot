@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AuraBot Mental Health Chatbot</title>
+</head>
+<body>
+  <div class="sidebar">
+    <h2>Past Questions</h2>
+    <div id="questionList"></div>
+  </div>
+
+  <div class="main">
+    <div class="header">🤖 AuraBot - Your Mental Health Companion</div>
+    <div class="chat-box" id="chatBox">
+      <div class="chat-message bot-message">Hello! I'm <strong>AuraBot</strong>. How are you feeling today?</div>
+    </div>
+
+    <form id="chatForm" class="input-row">
+      <input type="text" id="query" name="query" placeholder="How are you feeling today?" required />
+      <button type="submit">Send</button>
+      <button type="button" id="startListening">🎤</button>
+    </form>
+
+    <div class="summary-panel" id="summaryPanel">😊 Happiness Index: Neutral</div>
+
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="Avatar" class="avatar">
+  </div>
+</body>
+</html>
