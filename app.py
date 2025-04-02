@@ -1,12 +1,13 @@
 from flask import Flask, render_template, request, session, jsonify
 import requests
 import re
+import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  
 
 def generate_gemini_response(user_query):
-    api_key = "your_secret_key"  
+    api_key = os.getenv("API_KEY")  
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
 
     headers = {"Content-Type": "application/json"}
@@ -18,9 +19,9 @@ def generate_gemini_response(user_query):
 
         response_data = response.json()
         text = response_data["candidates"][0]["content"]["parts"][0]["text"]
-
+        bold_text = re.sub(r'\*\*(.*?)\*\*', r'<b>\1</b>', text)
         
-        return text
+        return bold_text
     except requests.exceptions.HTTPError as http_err:
         return f"HTTP error occurred: {http_err}"  # Handle HTTP errors
     except Exception as err:
