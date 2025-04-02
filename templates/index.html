@@ -189,5 +189,107 @@
 
     <img src="https://cdn-icons-png.flaticon.com/512/4712/4712027.png" alt="Avatar" class="avatar">
   </div>
+  <script>
+    const chatBox = document.getElementById("chatBox");
+    const form = document.getElementById("chatForm");
+    const questionList = document.getElementById("questionList");
+    const startListeningButton = document.getElementById("startListening");
+    const summaryPanel = document.getElementById("summaryPanel");
+
+    let chatHistory = [];
+    let sentimentScore = 0;
+
+    function addMessage(message, type, isHTML = false) {
+      const messageDiv = document.createElement("div");
+      messageDiv.classList.add("chat-message", `${type}-message`);
+      if (isHTML) {
+        messageDiv.innerHTML = message;
+      } else {
+        messageDiv.textContent = message;
+      }
+      chatBox.appendChild(messageDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function updateSidebar() {
+      const uniqueQuestions = [...new Map(chatHistory.map(item => [item.user, item])).values()];
+      questionList.innerHTML = "";
+      uniqueQuestions.forEach((entry) => {
+        const item = document.createElement("div");
+        item.classList.add("question-item");
+        item.textContent = entry.user;
+        item.onclick = () => {
+          chatBox.innerHTML = "";
+          addMessage("Hello again! Here's our past chat:", "bot");
+          addMessage(entry.user, "user");
+          addMessage(entry.bot, "bot", true);
+        };
+        questionList.appendChild(item);
+      });
+    }
+
+    function updateHappinessIndex() {
+      let summary = "😊 Happiness Index: Neutral";
+      document.body.classList.remove("happy-mode", "dark-mode");
+      if (sentimentScore > 1) {
+        summary = "😄 Happiness Index: High";
+        document.body.classList.add("happy-mode");
+      } else if (sentimentScore < 0) {
+        summary = "😟 Happiness Index: Low";
+        document.body.classList.add("dark-mode");
+      }
+      summaryPanel.textContent = summary;
+    }
+
+    function getSentiment(text) {
+      const positiveWords = ["happy", "great", "well", "good", "awesome", "fantastic", "relaxed"];
+      const negativeWords = ["sad", "depressed", "anxious", "angry", "bad", "worried", "tired"];
+      let score = 0;
+      const lowerText = text.toLowerCase();
+      positiveWords.forEach(word => { if (lowerText.includes(word)) score += 1 });
+      negativeWords.forEach(word => { if (lowerText.includes(word)) score -= 1 });
+      return score;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("query").value;
+      if (!query) return;
+
+      addMessage(query, "user");
+      document.getElementById("query").value = "";
+      sentimentScore += getSentiment(query);
+      updateHappinessIndex();
+
+      const response = await fetch("/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: new URLSearchParams({ query: query }),
+      });
+
+      const data = await response.json();
+      const botReply = data.bot_response || "I'm sorry, I didn't catch that.";
+
+      addMessage(botReply, "bot", true);
+      chatHistory.push({ user: query, bot: botReply });
+      updateSidebar();
+    });
+
+    const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+    recognition.lang = 'en-US';
+
+    startListeningButton.addEventListener("click", () => {
+      recognition.start();
+      startListeningButton.textContent = '🎙️ Listening...';
+    });
+
+    recognition.onresult = function (event) {
+      const transcript = event.results[0][0].transcript;
+      document.getElementById("query").value = transcript;
+      startListeningButton.textContent = '🎤';
+    };
+  </script>
 </body>
 </html>
