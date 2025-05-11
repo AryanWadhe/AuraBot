@@ -1,3 +1,6 @@
-flask
 gunicorn
+flask
 python-dotenv
+requests
+re
+os
